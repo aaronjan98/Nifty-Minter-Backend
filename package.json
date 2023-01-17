@@ -1,5 +1,5 @@
 {
-  "name": "AI NFT Minting Dapp Back End",
+  "name": "AI Text2Image NFT Minting Dapp Back End",
   "version": "1.0.0",
   "description": "Text to image generated NFTs - back end",
   "main": "index.js",
@@ -20,7 +20,7 @@
     "nft-minting-dapp"
   ],
   "author": "aaronjanovitch@gmail.com",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.1",
     "dotenv": "^16.0.3"
