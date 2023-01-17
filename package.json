@@ -1,0 +1,28 @@
+{
+  "name": "AI NFT Minting Dapp Back End",
+  "version": "1.0.0",
+  "description": "Text to image generated NFTs - back end",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "stability",
+    "stable-difussion",
+    "text2image",
+    "generative-art",
+    "ai-image",
+    "ai-nft-minter",
+    "nft-minter",
+    "nft-minting-dapp"
+  ],
+  "author": "aaronjanovitch@gmail.com",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.1",
+    "hardhat": "^2.12.6"
+  }
+}
