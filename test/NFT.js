@@ -33,5 +33,13 @@ describe('NFT', () => {
     it('has correct symbol', async () => {
       expect(await nft.symbol()).to.equal(SYMBOL)
     })
+
+    it('tracks feeAccount', async () => {
+      expect(await nft.feeAccount()).to.equal(deployer.address)
+    })
+
+    it('has correct fee amount', async () => {
+      expect(await nft.feePercent()).to.equal(feePercent)
+    })
   })
 })
