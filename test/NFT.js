@@ -8,6 +8,7 @@ const tokens = n => {
 describe('NFT', () => {
   const NAME = 'Mayday'
   const SYMBOL = 'MD'
+  const feePercent = 1
 
   let nft, deployer, minter
 
@@ -22,7 +23,7 @@ describe('NFT', () => {
   describe('Deployment', () => {
     beforeEach(async () => {
       const NFT = await ethers.getContractFactory('NFT')
-      nft = await NFT.deploy(NAME, SYMBOL)
+      nft = await NFT.deploy(NAME, SYMBOL, feePercent)
     })
 
     it('has correct name', async () => {

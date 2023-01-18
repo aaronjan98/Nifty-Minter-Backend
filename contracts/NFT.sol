@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
-// import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
 import 'hardhat/console.sol';
@@ -13,10 +12,17 @@ contract NFT is ERC721URIStorage, ERC721Enumerable, Ownable {
     Counters.Counter private _tokenIds;
     using Strings for uint256;
 
+    address payable public immutable feeAccount;
+    uint8 public immutable feePercent;
+
     constructor(
         string memory tokenName,
-        string memory symbol
-    ) ERC721(tokenName, symbol) {}
+        string memory symbol,
+        uint8 _feePercent
+    ) ERC721(tokenName, symbol) {
+        feeAccount = payable(msg.sender);
+        feePercent = _feePercent;
+    }
 
     function mint(string memory _tokenURI) public returns (uint256) {
         _tokenIds.increment();
@@ -39,10 +45,11 @@ contract NFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return tokenIds;
     }
 
-    function freeMint(address to, string memory nftTokenURI) public {
-        _safeMint(to, _tokenIds.current());
-        _setTokenURI(_tokenIds.current(), nftTokenURI);
-        _tokenIds.increment();
+    function withdraw() public payable onlyOwner {
+        (bool success, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }('');
+        require(success);
     }
 
     // Overrides required by Solidity
