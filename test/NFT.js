@@ -43,70 +43,95 @@ describe('NFT', () => {
   })
 
   describe('Minting', () => {
-    let counter
+    let transaction, result, counter
 
-    beforeEach(async () => {
-      counter = 0
-      const NFT = await ethers.getContractFactory('NFT')
-      nft = await NFT.deploy(NAME, SYMBOL, fee)
+    describe('Success', async () => {
+      beforeEach(async () => {
+        counter = 0
+        const NFT = await ethers.getContractFactory('NFT')
+        nft = await NFT.deploy(NAME, SYMBOL, fee)
 
-      transaction = await nft
-        .connect(minter)
-        .mint(URI + ++counter, { value: fee })
-      result = await transaction.wait()
-    })
+        transaction = await nft
+          .connect(minter)
+          .mint(URI + ++counter, { value: fee })
+        result = await transaction.wait()
+      })
 
-    it('returns amount of NFTs minted by user', async () => {
-      let tokenIds = await nft.walletOfOwner(minter.address)
-      expect(tokenIds.length).to.equal(1)
-      expect(await nft.balanceOf(minter.address)).to.equal(1)
-    })
+      it('returns amount of NFTs minted by user', async () => {
+        let tokenIds = await nft.walletOfOwner(minter.address)
+        expect(tokenIds.length).to.equal(1)
+        expect(await nft.balanceOf(minter.address)).to.equal(1)
+      })
 
-    it('returns the NFT tokenURI', async () => {
-      expect(await nft.tokenURI(1)).to.equal(`${URI}1`)
-    })
+      it('returns the NFT tokenURI', async () => {
+        expect(await nft.tokenURI(1)).to.equal(`${URI}1`)
+      })
 
-    it("updates feeAccount's balance", async () => {
-      const amountBeforeMint = await ethers.provider.getBalance(
-        deployer.address
-      )
-
-      transaction = await nft
-        .connect(minter)
-        .mint(URI + ++counter, { value: fee })
-      result = await transaction.wait()
-
-      const amountAfterMint = await ethers.provider.getBalance(deployer.address)
-      expect(amountAfterMint).to.equal(
-        amountBeforeMint.add(ethers.BigNumber.from(fee))
-      )
-    })
-
-    it('withdraws minting and gas fees from minter', async () => {
-      const amountBeforeMint = await ethers.provider.getBalance(minter.address)
-
-      transaction = await nft
-        .connect(minter)
-        .mint(URI + ++counter, { value: fee })
-      result = await transaction.wait()
-
-      const amountAfterMint = await ethers.provider.getBalance(minter.address)
-
-      const gasCost = transaction.gasPrice.mul(result.gasUsed)
-
-      expect(amountAfterMint).to.equal(
-        amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))
-      )
-    })
-
-    it('emits Mint event', async () => {
-      await expect(transaction)
-        .to.emit(nft, 'Transfer')
-        .withArgs(
-          '0x0000000000000000000000000000000000000000',
-          minter.address,
-          1
+      it("updates feeAccount's balance", async () => {
+        const amountBeforeMint = await ethers.provider.getBalance(
+          deployer.address
         )
+
+        transaction = await nft
+          .connect(minter)
+          .mint(URI + ++counter, { value: fee })
+        result = await transaction.wait()
+
+        const amountAfterMint = await ethers.provider.getBalance(
+          deployer.address
+        )
+        expect(amountAfterMint).to.equal(
+          amountBeforeMint.add(ethers.BigNumber.from(fee))
+        )
+      })
+
+      it('withdraws minting and gas fees from minter', async () => {
+        const amountBeforeMint = await ethers.provider.getBalance(
+          minter.address
+        )
+
+        transaction = await nft
+          .connect(minter)
+          .mint(URI + ++counter, { value: fee })
+        result = await transaction.wait()
+
+        const amountAfterMint = await ethers.provider.getBalance(minter.address)
+
+        const gasCost = transaction.gasPrice.mul(result.gasUsed)
+
+        expect(amountAfterMint).to.equal(
+          amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))
+        )
+      })
+
+      it('emits Mint event', async () => {
+        await expect(transaction)
+          .to.emit(nft, 'Transfer')
+          .withArgs(
+            '0x0000000000000000000000000000000000000000',
+            minter.address,
+            1
+          )
+      })
+    })
+
+    describe('Failure', async () => {
+      beforeEach(async () => {
+        counter = 0
+        const NFT = await ethers.getContractFactory('NFT')
+        nft = await NFT.deploy(NAME, SYMBOL, fee)
+      })
+
+      it('rejects insufficient payment', async () => {
+        await expect(
+          nft.connect(minter).mint(URI + ++counter, { value: gwei(1000) })
+        ).to.be.reverted
+      })
+
+      it('does not return URIs for invalid tokens', async () => {
+        nft.connect(minter).mint(URI + ++counter, { value: gwei(10000) })
+        await expect(nft.tokenURI(counter)).to.be.reverted
+      })
     })
   })
 })
