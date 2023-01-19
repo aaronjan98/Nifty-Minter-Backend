@@ -133,5 +133,29 @@ describe('NFT', () => {
         await expect(nft.tokenURI(counter)).to.be.reverted
       })
     })
+
+    describe('Displaying NFTs', () => {
+      let transaction, result
+
+      beforeEach(async () => {
+        const NFT = await ethers.getContractFactory('NFT')
+        nft = await NFT.deploy(NAME, SYMBOL, fee)
+
+        for (let i = 0; i < 4; i++) {
+          transaction = await nft.connect(minter).mint(URI + i, { value: fee })
+          await transaction.wait()
+        }
+      })
+
+      it('returns all the NFTs for a given owner', async () => {
+        let tokenIds = await nft.walletOfOwner(minter.address)
+
+        expect(tokenIds.length).to.equal(4)
+        expect(tokenIds[0].toString()).to.equal('1')
+        expect(tokenIds[1].toString()).to.equal('2')
+        expect(tokenIds[2].toString()).to.equal('3')
+        expect(tokenIds[3].toString()).to.equal('4')
+      })
+    })
   })
 })
