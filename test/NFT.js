@@ -5,7 +5,7 @@ const { ether, gwei, wei } = require('../common/tokens.js')
 describe('NFT', () => {
   const NAME = 'Mayday'
   const SYMBOL = 'MD'
-  const fee = gwei(50000)
+  const fee = ether(0.01)
   let URI =
     'https://ai-gen-nft-minter.infura-ipfs.io/ipfs/QmQQbJ4iCcWzJjpSi2QrAv57gyXFxDkDmbGcWJkeqA7zXY/'
 
@@ -43,8 +43,10 @@ describe('NFT', () => {
   })
 
   describe('Minting', () => {
+    let counter
+
     beforeEach(async () => {
-      let counter = 0
+      counter = 0
       const NFT = await ethers.getContractFactory('NFT')
       nft = await NFT.deploy(NAME, SYMBOL, fee)
 
@@ -57,10 +59,44 @@ describe('NFT', () => {
     it('returns amount of NFTs minted by user', async () => {
       let tokenIds = await nft.walletOfOwner(minter.address)
       expect(tokenIds.length).to.equal(1)
+      expect(await nft.balanceOf(minter.address)).to.equal(1)
     })
 
     it('returns the NFT tokenURI', async () => {
       expect(await nft.tokenURI(1)).to.equal(`${URI}1`)
+    })
+
+    it("updates feeAccount's balance", async () => {
+      const amountBeforeMint = await ethers.provider.getBalance(
+        deployer.address
+      )
+
+      transaction = await nft
+        .connect(minter)
+        .mint(URI + ++counter, { value: fee })
+      result = await transaction.wait()
+
+      const amountAfterMint = await ethers.provider.getBalance(deployer.address)
+      expect(amountAfterMint).to.equal(
+        amountBeforeMint.add(ethers.BigNumber.from(fee))
+      )
+    })
+
+    it('withdraws minting and gas fees from minter', async () => {
+      const amountBeforeMint = await ethers.provider.getBalance(minter.address)
+
+      transaction = await nft
+        .connect(minter)
+        .mint(URI + ++counter, { value: fee })
+      result = await transaction.wait()
+
+      const amountAfterMint = await ethers.provider.getBalance(minter.address)
+
+      const gasCost = transaction.gasPrice.mul(result.gasUsed)
+
+      expect(amountAfterMint).to.equal(
+        amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))
+      )
     })
   })
 })

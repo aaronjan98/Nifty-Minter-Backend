@@ -49,13 +49,6 @@ contract NFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return tokenIds;
     }
 
-    function withdraw() public payable onlyOwner {
-        (bool success, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }('');
-        require(success);
-    }
-
     // Overrides required by Solidity
     function _burn(
         uint256 tokenId
