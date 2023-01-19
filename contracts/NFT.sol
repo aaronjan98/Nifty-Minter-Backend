@@ -13,21 +13,25 @@ contract NFT is ERC721URIStorage, ERC721Enumerable, Ownable {
     using Strings for uint256;
 
     address payable public immutable feeAccount;
-    uint8 public immutable feePercent;
+    uint256 public immutable fee;
 
     constructor(
         string memory tokenName,
         string memory symbol,
-        uint8 _feePercent
+        uint256 _fee
     ) ERC721(tokenName, symbol) {
         feeAccount = payable(msg.sender);
-        feePercent = _feePercent;
+        fee = _fee;
     }
 
-    function mint(string memory _tokenURI) public returns (uint256) {
-        _tokenIds.increment();
+    function mint(string memory _tokenURI) public payable returns (uint256) {
+        require(msg.value >= fee, 'Not enough ether to cover the minting fee.');
 
+        feeAccount.transfer(fee);
+
+        _tokenIds.increment();
         uint256 id = _tokenIds.current();
+
         _safeMint(msg.sender, id);
         _setTokenURI(id, _tokenURI);
 
