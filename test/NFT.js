@@ -98,5 +98,15 @@ describe('NFT', () => {
         amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))
       )
     })
+
+    it('emits Mint event', async () => {
+      await expect(transaction)
+        .to.emit(nft, 'Transfer')
+        .withArgs(
+          '0x0000000000000000000000000000000000000000',
+          minter.address,
+          1
+        )
+    })
   })
 })
