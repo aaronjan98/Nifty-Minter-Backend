@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ganache": "ganache --chain.chainId 1338 -p 9002 -a 20 -e 10000 -m 'egg cannon figure ketchup fall issue never share online shiver chief album'"
   },
   "keywords": [
     "stability",
