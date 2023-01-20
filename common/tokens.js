@@ -8,4 +8,24 @@ const ether = eth2Wei
 const gwei = eth2Gwei
 const wei = wei2Eth
 
-module.exports = { ether, gwei, wei }
+function saveABI(nft) {
+  const fs = require('fs')
+  const abi = artifacts.readArtifactSync('NFT').abi
+  const filePath = '../frontend/src/abis/NFT.json'
+
+  // check if the file already exists
+  if (!fs.existsSync(filePath)) {
+    // create the file if it doesn't exist
+    fs.openSync(filePath, 'w')
+  }
+
+  fs.writeFile(filePath, JSON.stringify(abi, null, 2), 'utf8', err => {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log('ABI saved to frontend directory')
+    }
+  })
+}
+
+module.exports = { ether, gwei, wei, saveABI }
