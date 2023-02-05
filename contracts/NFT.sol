@@ -34,20 +34,14 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
 
         bytes memory dataURI = abi.encodePacked(
             '{',
-            '"id": "',
-            id.toString(),
-            '"',
             '"name": "Nifty Mint #',
             id.toString(),
             '",',
             '"description": "',
             description,
-            '"',
+            '",',
             '"image": "',
             imageURI,
-            '"',
-            '"date": "',
-            block.timestamp,
             '"',
             '}'
         );

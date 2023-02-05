@@ -59,58 +59,6 @@ describe('NFT', () => {
         result = await transaction.wait()
       })
 
-      it('returns the metadata for generated image', async () => {
-        const metadata = {
-          id: 1,
-          name: 'Nifty Mint #1',
-          description: 'test description',
-          image: URI,
-        }
-
-        // const tokenURI = await nft.connect(minter).tokenURI(1)
-
-        // const tx = await nft.genMetadataURI(URI, description, 1)
-        // const result = await tx.wait()
-        console.log(result.logs[0].data)
-
-        // Decode the log data into a more readable format
-        // const decodedData = ethers.utils.defaultAbiCoder.decode(["string"], log.data);
-
-        //         const [
-        //           tokenId,
-        //           lengthTokenURI,
-        //           lengthDescription,
-        //           tokenURI,
-        //           textPrompt,
-        //         ] = abi.decodeParameters(
-        //           ['uint256', 'uint256', 'uint256', 'bytes', 'bytes'],
-        //           result.data.slice(10)
-        //         )
-        // Decode the log data into a more readable format
-
-        if (result.data) {
-          const decodedData = ethers.utils.defaultAbiCoder.decode(
-            ['string'],
-            result.data
-          )
-          console.log(decodedData)
-        } else {
-          console.error('The result.data property is undefined')
-        }
-
-        // console.log('Token Id:', tokenId.toString())
-        // console.log('Token URI:', web3.utils.hexToUtf8(tokenURI.slice(2)))
-        // console.log('Description:', web3.utils.hexToUtf8(textPrompt.slice(2)))
-
-        // const decodedTokenURI = JSON.parse(
-        //   Buffer.from(tokenURI.substring(26), 'base64').toString('utf8')
-        // )
-        // expect(decodedTokenURI.id).to.eq(id.toString())
-        // expect(decodedTokenURI.name).to.eq('Nifty Mint #' + id.toString())
-        // expect(decodedTokenURI.description).to.eq('Token description')
-        // expect(decodedTokenURI.image).to.eq('image-uri')
-      })
-
       it('returns amount of NFTs minted by user', async () => {
         let tokenIds = await nft.walletOfOwner(minter.address)
         expect(tokenIds.length).to.equal(1)
@@ -118,7 +66,22 @@ describe('NFT', () => {
       })
 
       it('returns the NFT tokenURI', async () => {
-        expect(await nft.tokenURI(1)).to.equal(`${URI}1`)
+        const tokenURI = await nft.tokenURI(1)
+        const data = tokenURI.split(',')[1]
+        const decodedData = Buffer.from(data, 'base64').toString('utf8')
+        const metadata = JSON.parse(decodedData)
+
+        expect(metadata.image).to.equal(`${URI}1`)
+      })
+
+      it('returns the NFT metadata', async () => {
+        const tokenURI = await nft.tokenURI(1)
+        const data = tokenURI.split(',')[1]
+        const decodedData = Buffer.from(data, 'base64').toString('utf8')
+        const metadata = JSON.parse(decodedData)
+
+        expect(metadata.name).to.equal('Nifty Mint #1')
+        expect(metadata.description).to.equal('test description')
       })
 
       it("updates feeAccount's balance", async () => {
