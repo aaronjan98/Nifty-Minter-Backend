@@ -13,9 +13,7 @@ function saveABI(nft) {
   const abi = artifacts.readArtifactSync('NFT').abi
   const filePath = '../frontend/src/abis/NFT.json'
 
-  // check if the file already exists
   if (!fs.existsSync(filePath)) {
-    // create the file if it doesn't exist
     fs.openSync(filePath, 'w')
   }
 

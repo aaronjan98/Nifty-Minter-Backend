@@ -1,5 +1,6 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
+
 const { ether, gwei, wei } = require('../common/tokens.js')
 
 describe('NFT', () => {
@@ -8,6 +9,7 @@ describe('NFT', () => {
   const fee = ether(0.01)
   let URI =
     'https://ai-gen-nft-minter.infura-ipfs.io/ipfs/QmQQbJ4iCcWzJjpSi2QrAv57gyXFxDkDmbGcWJkeqA7zXY/'
+  let description = 'test description'
 
   let nft, deployer, minter
 
@@ -53,8 +55,60 @@ describe('NFT', () => {
 
         transaction = await nft
           .connect(minter)
-          .mint(URI + ++counter, { value: fee })
+          .mint(URI + ++counter, description, { value: fee })
         result = await transaction.wait()
+      })
+
+      it('returns the metadata for generated image', async () => {
+        const metadata = {
+          id: 1,
+          name: 'Nifty Mint #1',
+          description: 'test description',
+          image: URI,
+        }
+
+        // const tokenURI = await nft.connect(minter).tokenURI(1)
+
+        // const tx = await nft.genMetadataURI(URI, description, 1)
+        // const result = await tx.wait()
+        console.log(result.logs[0].data)
+
+        // Decode the log data into a more readable format
+        // const decodedData = ethers.utils.defaultAbiCoder.decode(["string"], log.data);
+
+        //         const [
+        //           tokenId,
+        //           lengthTokenURI,
+        //           lengthDescription,
+        //           tokenURI,
+        //           textPrompt,
+        //         ] = abi.decodeParameters(
+        //           ['uint256', 'uint256', 'uint256', 'bytes', 'bytes'],
+        //           result.data.slice(10)
+        //         )
+        // Decode the log data into a more readable format
+
+        if (result.data) {
+          const decodedData = ethers.utils.defaultAbiCoder.decode(
+            ['string'],
+            result.data
+          )
+          console.log(decodedData)
+        } else {
+          console.error('The result.data property is undefined')
+        }
+
+        // console.log('Token Id:', tokenId.toString())
+        // console.log('Token URI:', web3.utils.hexToUtf8(tokenURI.slice(2)))
+        // console.log('Description:', web3.utils.hexToUtf8(textPrompt.slice(2)))
+
+        // const decodedTokenURI = JSON.parse(
+        //   Buffer.from(tokenURI.substring(26), 'base64').toString('utf8')
+        // )
+        // expect(decodedTokenURI.id).to.eq(id.toString())
+        // expect(decodedTokenURI.name).to.eq('Nifty Mint #' + id.toString())
+        // expect(decodedTokenURI.description).to.eq('Token description')
+        // expect(decodedTokenURI.image).to.eq('image-uri')
       })
 
       it('returns amount of NFTs minted by user', async () => {
@@ -74,6 +128,11 @@ describe('NFT', () => {
 
         transaction = await nft
           .connect(minter)
+          .updateMetadata('test description', URI)
+        result = await transaction.wait()
+
+        transaction = await nft
+          .connect(minter)
           .mint(URI + ++counter, { value: fee })
         result = await transaction.wait()
 
@@ -90,6 +149,11 @@ describe('NFT', () => {
           minter.address
         )
 
+        const tx = await nft
+          .connect(minter)
+          .updateMetadata('test description', URI)
+        const res = await tx.wait()
+
         transaction = await nft
           .connect(minter)
           .mint(URI + ++counter, { value: fee })
@@ -97,7 +161,9 @@ describe('NFT', () => {
 
         const amountAfterMint = await ethers.provider.getBalance(minter.address)
 
-        const gasCost = transaction.gasPrice.mul(result.gasUsed)
+        const metadataGasCost = tx.gasPrice.mul(res.gasUsed)
+        const mintGasCost = transaction.gasPrice.mul(result.gasUsed)
+        const gasCost = metadataGasCost.add(mintGasCost)
 
         expect(amountAfterMint).to.equal(
           amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))

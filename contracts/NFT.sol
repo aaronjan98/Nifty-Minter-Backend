@@ -4,6 +4,8 @@ pragma solidity ^0.8.17;
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
+import '@openzeppelin/contracts/utils/Strings.sol';
+import '@openzeppelin/contracts/utils/Base64.sol';
 import 'hardhat/console.sol';
 
 contract NFT is ERC721URIStorage, ERC721Enumerable {
@@ -23,7 +25,46 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
         fee = _fee;
     }
 
-    function mint(string memory _tokenURI) public payable returns (uint256) {
+    function genMetadataURI(
+        string memory imageURI,
+        string memory description,
+        uint256 id
+    ) public returns (string memory) {
+        string memory newMetadata = '';
+
+        bytes memory dataURI = abi.encodePacked(
+            '{',
+            '"id": "',
+            id.toString(),
+            '"',
+            '"name": "Nifty Mint #',
+            id.toString(),
+            '",',
+            '"description": "',
+            description,
+            '"',
+            '"image": "',
+            imageURI,
+            '"',
+            '"date": "',
+            block.timestamp,
+            '"',
+            '}'
+        );
+
+        return
+            string(
+                abi.encodePacked(
+                    'data:application/json;base64,',
+                    Base64.encode(dataURI)
+                )
+            );
+    }
+
+    function mint(
+        string memory _tokenURI,
+        string memory description
+    ) public payable returns (uint256) {
         require(msg.value >= fee, 'Not enough ether to cover the minting fee.');
 
         feeAccount.transfer(fee);
@@ -32,7 +73,7 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
         uint256 id = _tokenIds.current();
 
         _safeMint(msg.sender, id);
-        _setTokenURI(id, _tokenURI);
+        _setTokenURI(id, genMetadataURI(_tokenURI, description, id));
 
         return id;
     }
