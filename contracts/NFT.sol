@@ -6,7 +6,6 @@ import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/Base64.sol';
-import 'hardhat/console.sol';
 
 contract NFT is ERC721URIStorage, ERC721Enumerable {
     using Counters for Counters.Counter;
@@ -29,7 +28,7 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
         string memory imageURI,
         string memory description,
         uint256 id
-    ) public returns (string memory) {
+    ) private returns (string memory) {
         string memory newMetadata = '';
 
         bytes memory dataURI = abi.encodePacked(

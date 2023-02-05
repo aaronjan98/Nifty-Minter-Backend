@@ -6,7 +6,7 @@ const { ether, gwei, wei } = require('../common/tokens.js')
 describe('NFT', () => {
   const NAME = 'Mayday'
   const SYMBOL = 'MD'
-  const fee = ether(0.01)
+  const fee = ether(1)
   let URI =
     'https://ai-gen-nft-minter.infura-ipfs.io/ipfs/QmQQbJ4iCcWzJjpSi2QrAv57gyXFxDkDmbGcWJkeqA7zXY/'
   let description = 'test description'
@@ -91,12 +91,7 @@ describe('NFT', () => {
 
         transaction = await nft
           .connect(minter)
-          .updateMetadata('test description', URI)
-        result = await transaction.wait()
-
-        transaction = await nft
-          .connect(minter)
-          .mint(URI + ++counter, { value: fee })
+          .mint(URI + ++counter, description, { value: fee })
         result = await transaction.wait()
 
         const amountAfterMint = await ethers.provider.getBalance(
@@ -111,22 +106,12 @@ describe('NFT', () => {
         const amountBeforeMint = await ethers.provider.getBalance(
           minter.address
         )
-
-        const tx = await nft
-          .connect(minter)
-          .updateMetadata('test description', URI)
-        const res = await tx.wait()
-
         transaction = await nft
           .connect(minter)
-          .mint(URI + ++counter, { value: fee })
+          .mint(URI + ++counter, description, { value: fee })
         result = await transaction.wait()
-
         const amountAfterMint = await ethers.provider.getBalance(minter.address)
-
-        const metadataGasCost = tx.gasPrice.mul(res.gasUsed)
-        const mintGasCost = transaction.gasPrice.mul(result.gasUsed)
-        const gasCost = metadataGasCost.add(mintGasCost)
+        const gasCost = transaction.gasPrice.mul(result.gasUsed)
 
         expect(amountAfterMint).to.equal(
           amountBeforeMint.sub(gasCost.add(ethers.BigNumber.from(fee)))
@@ -171,7 +156,9 @@ describe('NFT', () => {
         nft = await NFT.deploy(NAME, SYMBOL, fee)
 
         for (let i = 0; i < 4; i++) {
-          transaction = await nft.connect(minter).mint(URI + i, { value: fee })
+          transaction = await nft
+            .connect(minter)
+            .mint(URI + i, description, { value: fee })
           await transaction.wait()
         }
       })
