@@ -8,8 +8,8 @@ const hre = require('hardhat')
 const { ether, saveABI } = require('../common/tokens.js')
 
 async function main() {
-  const NAME = 'Mayday'
-  const SYMBOL = 'MD'
+  const NAME = 'Nifty Minter'
+  const SYMBOL = 'NM'
   const fee = ether(0.01)
 
   let nft, deployer, minter
@@ -22,7 +22,7 @@ async function main() {
   console.log(`\nNFT deployed to: ${ethers.utils.getAddress(nft.address)}\n`)
 
   // save contract ABI to front end
-  // saveABI(nft)
+  saveABI(nft)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
